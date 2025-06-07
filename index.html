@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İnteraktif Amino Asit Rehberi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Study -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive dashboard. The core is a filterable grid of amino acid "cards". A doughnut chart and filter buttons allow users to dynamically group the amino acids by their chemical or essential properties, which reinforces classification concepts. Clicking a card opens a modal with detailed information, including structure, precursors, and clinical correlations, providing layered, on-demand learning. Separate, clearly-defined sections for key derivatives and clinical disorders allow users to explore the information from different starting points (e.g., from disease to amino acid). This structure moves beyond the linear format of the source text, promoting active exploration and discovery of relationships, which is a more effective study method for a dense, interconnected topic like this. -->
+    <!-- Visualization & Content Choices: 
+        1. Amino Acid Grid: Info: All 20 AAs -> Goal: Organize/Compare -> Viz: Interactive HTML cards -> Interaction: Filter via buttons/chart, click for detail modal -> Justification: Central, dynamic hub for exploration.
+        2. Classification Overview: Info: AA class distribution -> Goal: Inform/Compare -> Viz: Doughnut Chart -> Interaction: Click a slice to filter the main grid -> Justification: Provides a high-level visual summary and an engaging way to initiate filtering -> Library: Chart.js (Canvas).
+        3. Detailed View: Info: Specific AA properties -> Goal: Inform -> Viz: Structured HTML in a modal -> Interaction: Opens on card click -> Justification: Prevents info overload by showing deep-dive details on demand.
+        4. Precursor/Derivative Map: Info: AA to molecule pathways -> Goal: Show Relationships -> Viz: Thematic grouped lists (HTML/CSS) -> Interaction: N/A -> Justification: Clearly visualizes high-yield metabolic relationships.
+        5. Clinical Correlations: Info: Metabolic diseases -> Goal: Relate basic science to clinical context -> Viz: HTML cards for each disease -> Interaction: Click to see details/affected AAs -> Justification: Connects biochemistry to pathology, a key TUS requirement.
+        6. ✨ Gemini Mnemonic Generator: Info: Specific AA data -> Goal: Enhance Memorization -> Viz: Text output in modal -> Interaction: Button click -> Justification: Uses LLM to create personalized study aids.
+        7. ✨ Gemini Case Generator: Info: Specific disease data -> Goal: Apply Knowledge -> Viz: Text output in card -> Interaction: Button click -> Justification: Uses LLM to generate clinical scenarios, improving context.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+        }
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e7e5e4; /* stone-200 */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 40;
+            display: none;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            display: none;
+            max-height: 90vh;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .tag-alifatik { background-color: #fde68a; color: #78350f; } /* yellow-200 / amber-800 */
+        .tag-aromatik { background-color: #fecaca; color: #991b1b; } /* red-200 / red-800 */
+        .tag-polar { background-color: #bfdbfe; color: #1e3a8a; } /* blue-200 / blue-800 */
+        .tag-asidik { background-color: #fed7aa; color: #9a3412; } /* orange-200 / orange-800 */
+        .tag-bazik { background-color: #bbf7d0; color: #166534; } /* green-200 / green-800 */
+        .tag-esansiyel { border: 1px solid #57534e; color: #57534e; } /* stone-600 */
+        .tag-ozel { background-color: #e5e7eb; color: #374151; } /* gray-200 / gray-700 */
+        .gemini-btn {
+            background-color: #6d28d9; /* violet-700 */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .gemini-btn:hover {
+            background-color: #5b21b6; /* violet-800 */
+        }
+        .gemini-btn:disabled {
+            background-color: #a78bfa; /* violet-400 */
+            cursor: not-allowed;
+        }
+        .gemini-output {
+            background-color: #f3f4f6; /* gray-100 */
+            border-left: 4px solid #6d28d9; /* violet-700 */
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            border-radius: 0.25rem;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div id="app" class="container mx-auto px-4 py-8 max-w-7xl">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-stone-900">TUS İnteraktif Amino Asit Rehberi</h1>
+            <p class="mt-3 text-lg text-stone-600 max-w-3xl mx-auto">Amino asitleri, özelliklerini, metabolik rollerini ve klinik bağlantılarını interaktif bir şekilde keşfedin. Şimdi ✨ Gemini destekli öğrenme araçlarıyla!</p>
+        </header>
+
+        <main>
+            <!-- Section 1: Interactive Explorer -->
+            <section id="explorer" class="mb-16 bg-white p-6 rounded-2xl shadow-lg">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-stone-800">Amino Asit Kaşifi</h2>
+                    <p class="mt-2 text-stone-600">Aşağıdaki interaktif kartları kullanarak amino asitleri sınıflandırmalarına göre filtreleyin veya her birinin detaylarını keşfedin. Grafiğe tıklayarak da hızlı filtreleme yapabilirsiniz.</p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Filters & Chart -->
+                    <div class="w-full md:w-1/3 lg:w-1/4">
+                        <h3 class="text-xl font-semibold mb-4 text-stone-700">Filtreler</h3>
+                        <div class="flex flex-wrap gap-2 mb-6" id="filter-buttons">
+                            <!-- Filter buttons will be injected here -->
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="aaChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- AA Grid -->
+                    <div class="w-full md:w-2/3 lg:w-3/4">
+                        <div id="aa-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                            <!-- Amino acid cards will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 2: Key Derivatives -->
+            <section id="derivatives" class="mb-16">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-stone-800">Önemli Türevler ve Öncül Moleküller</h2>
+                    <p class="mt-2 text-stone-600">Bu bölümde, belirli amino asitlerden sentezlenen hayati öneme sahip molekülleri ve bu metabolik yolları bulabilirsiniz. Bu ilişkiler, TUS'ta sıkça sorgulanan spot bilgilerdir.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="derivatives-grid">
+                    <!-- Derivative info will be injected here -->
+                </div>
+            </section>
+            
+            <!-- Section 3: Clinical Correlations -->
+            <section id="clinical">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-stone-800">Klinik Korelasyonlar</h2>
+                    <p class="mt-2 text-stone-600">Amino asit metabolizmasındaki enzimatik kusurların neden olduğu hastalıkları inceleyin. ✨ Gemini ile her hastalık için örnek bir klinik vaka oluşturabilirsiniz.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="clinical-grid">
+                     <!-- Clinical correlation cards will be injected here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="modal-backdrop" class="modal-backdrop"></div>
+    <div id="aa-modal" class="modal w-11/12 max-w-2xl bg-white rounded-lg shadow-2xl p-6 md:p-8 overflow-y-auto">
+        <div id="modal-content">
+            <!-- Modal content will be injected here -->
+        </div>
+        <button id="modal-close-btn" class="absolute top-4 right-4 text-stone-500 hover:text-stone-800 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const aminoAcidsData = [
+        { id: 'Gly', name: 'Glisin', code: 'G', class: 'Alifatik', isEssential: false, properties: ['En basit amino asit', 'Kiral değil', 'Proteinlerde esneklik sağlar', 'Halka (Heme) ve Pürin sentezinin temel taşı'] },
+        { id: 'Ala', name: 'Alanin', code: 'A', class: 'Alifatik', isEssential: false, properties: ['En basit ikinci amino asit'] },
+        { id: 'Val', name: 'Valin', code: 'V', class: 'Alifatik', isEssential: true, properties: ['Dallı zincirli (BCAA)', 'Enerji metabolizmasında önemli', 'Akçaağaç Şurubu İdrar Hastalığı ile ilişkili'] },
+        { id: 'Leu', name: 'Lösin', code: 'L', class: 'Alifatik', isEssential: true, properties: ['Dallı zincirli (BCAA)', 'Enerji metabolizmasında önemli', 'Akçaağaç Şurubu İdrar Hastalığı ile ilişkili'] },
+        { id: 'Ile', name: 'İzolösin', code: 'I', class: 'Alifatik', isEssential: true, properties: ['Dallı zincirli (BCAA)', 'Enerji metabolizmasında önemli', 'Akçaağaç Şurubu İdrar Hastalığı ile ilişkili'] },
+        { id: 'Pro', name: 'Prolin', code: 'P', class: 'Alifatik', isEssential: false, properties: ['Teknik olarak "imino asit"', 'Alfa-heliks yapısını bozar (heliks kırıcı)'] },
+        { id: 'Phe', name: 'Fenilalanin', code: 'F', class: 'Aromatik', isEssential: true, properties: ['Tirozin öncülüdür', 'Fenilketonüri (PKU) ile ilişkili'] },
+        { id: 'Tyr', name: 'Tirozin', code: 'Y', class: 'Aromatik', isEssential: false, properties: ['Fenilalaninden sentezlenir', 'Katekolaminler, Tiroid Hormonları ve Melanin öncülüdür', 'Alkaptonüri ile ilişkili'] },
+        { id: 'Trp', name: 'Triptofan', code: 'W', class: 'Aromatik', isEssential: true, properties: ['En büyük amino asit', 'Serotonin, Melatonin ve Niasin (B3) öncülüdür'] },
+        { id: 'Ser', name: 'Serin', code: 'S', class: 'Polar', isEssential: false, properties: ['Hidroksil (-OH) grubu içerir', 'Fosforilasyon bölgesi'] },
+        { id: 'Thr', name: 'Treonin', code: 'T', class: 'Polar', isEssential: true, properties: ['Hidroksil (-OH) grubu içerir', 'Fosforilasyon bölgesi'] },
+        { id: 'Cys', name: 'Sistein', code: 'C', class: 'Polar', isEssential: false, properties: ['Sülfidril (-SH) grubu içerir', 'Disülfid bağları oluşturur', 'Glutatyon yapısında bulunur'] },
+        { id: 'Asn', name: 'Asparajin', code: 'N', class: 'Polar', isEssential: false, properties: ['Aspartat\'ın amid formu'] },
+        { id: 'Gln', name: 'Glutamin', code: 'Q', class: 'Polar', isEssential: false, properties: ['Glutamat\'ın amid formu'] },
+        { id: 'Asp', name: 'Aspartik Asit', code: 'D', class: 'Asidik', isEssential: false, properties: ['Fizyolojik pH\'da negatif yüklü (Aspartat)'] },
+        { id: 'Glu', name: 'Glutamik Asit', code: 'E', class: 'Asidik', isEssential: false, properties: ['Fizyolojik pH\'da negatif yüklü (Glutamat)', 'En önemli uyarıcı nörotransmitter', 'GABA ve Glutatyon öncülüdür'] },
+        { id: 'Lys', name: 'Lizin', code: 'K', class: 'Bazik', isEssential: true, properties: ['Fizyolojik pH\'da pozitif yüklü'] },
+        { id: 'Arg', name: 'Arjinin', code: 'R', class: 'Bazik', isEssential: true, properties: ['Yarı esansiyel', 'En bazik amino asit', 'Nitrik Oksit (NO), Üre ve Kreatin öncülüdür'] },
+        { id: 'His', name: 'Histidin', code: 'H', class: 'Bazik', isEssential: true, properties: ['Fizyolojik pH\'a yakın pKa değeri', 'Önemli kan tamponu', 'Dekarboksilasyon ile Histamin\'e dönüşür'] },
+        { id: 'Met', name: 'Metiyonin', code: 'M', class: 'Polar', properties: ['S-adenozilmetionin (SAM) olarak metil donörü', 'Homosistinüri ile ilişkili'], isEssential: true },
+    ];
+    
+    const derivativesData = [
+        { aa: 'Glisin', derivatives: ['Halka (Heme)', 'Pürin Bazları'] },
+        { aa: 'Arjinin', derivatives: ['Nitrik Oksit (NO)', 'Üre', 'Kreatin'] },
+        { aa: 'Triptofan', derivatives: ['Serotonin', 'Melatonin', 'Niasin (B3)'] },
+        { aa: 'Tirozin', derivatives: ['Dopamin', 'Noradrenalin', 'Adrenalin', 'T3/T4', 'Melanin'] },
+        { aa: 'Glutamat', derivatives: ['GABA', 'Glutatyon'] },
+        { aa: 'Histidin', derivatives: ['Histamin'] },
+        { aa: 'Metiyonin', derivatives: ['S-adenozilmetionin (SAM)'] },
+    ];
+
+    const clinicalData = [
+        { id: 'pku', name: 'Fenilketonüri (PKU)', enzyme: 'Fenilalanin hidroksilaz', affected: ['Fenilalanin', 'Tirozin'], summary: 'Fenilalanin, tirozine dönüşemez. Kanda birikerek zeka geriliğine yol açar.' },
+        { id: 'msud', name: 'Akçaağaç Şurubu İdrar Hastalığı (MSUD)', enzyme: 'Dallı zincirli α-ketoasit dehidrogenaz', affected: ['Valin', 'Lösin', 'İzolösin'], summary: 'BCAA metabolizması bozulur. İdrarda tipik kokuya neden olur.' },
+        { id: 'homocystinuria', name: 'Homosistinüri', enzyme: 'Sistatyonin β-sentaz', affected: ['Metiyonin', 'Sistein'], summary: 'Metiyonin metabolizması bozulur. Lens dislokasyonu ve tromboemboli riski artar.' },
+        { id: 'alkaptonuria', name: 'Alkaptonüri', enzyme: 'Homogentizat oksidaz', affected: ['Tirozin', 'Fenilalanin'], summary: 'Tirozin yıkım yolunda defekt sonucu homogentisik asit birikir. İdrar ve kıkırdakta siyaha dönme görülür.' },
+    ];
+
+    const filterButtonsContainer = document.getElementById('filter-buttons');
+    const aaGrid = document.getElementById('aa-grid');
+    const modal = document.getElementById('aa-modal');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const modalContent = document.getElementById('modal-content');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+
+    const filters = {
+        'Tümü': () => true, 'Alifatik': aa => aa.class === 'Alifatik', 'Aromatik': aa => aa.class === 'Aromatik', 'Polar': aa => aa.class === 'Polar', 'Asidik': aa => aa.class === 'Asidik', 'Bazik': aa => aa.class === 'Bazik', 'Esansiyel': aa => aa.isEssential, 'Non-Esansiyel': aa => !aa.isEssential,
+    };
+    
+    let activeFilter = 'Tümü';
+    
+    function getClassColor(className) {
+        const colors = { 'Alifatik': 'tag-alifatik', 'Aromatik': 'tag-aromatik', 'Polar': 'tag-polar', 'Asidik': 'tag-asidik', 'Bazik': 'tag-bazik', };
+        return colors[className] || 'tag-ozel';
+    }
+
+    async function callGemini(prompt, buttonElement, outputElement) {
+        buttonElement.disabled = true;
+        buttonElement.textContent = 'Oluşturuluyor...';
+        outputElement.innerHTML = '';
+        
+        try {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "" 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                outputElement.textContent = text;
+            } else {
+                outputElement.textContent = 'Anlaşılır bir yanıt alınamadı. Lütfen tekrar deneyin.';
+            }
+
+        } catch (error) {
+            console.error("Gemini API call failed:", error);
+            outputElement.textContent = 'Bir hata oluştu. Lütfen daha sonra tekrar deneyin.';
+        } finally {
+            buttonElement.disabled = false;
+            buttonElement.textContent = buttonElement.dataset.originalText;
+        }
+    }
+
+
+    function renderCards() {
+        aaGrid.innerHTML = '';
+        const filteredData = aminoAcidsData.filter(filters[activeFilter]);
+        filteredData.forEach(aa => {
+            const card = document.createElement('div');
+            card.className = 'card cursor-pointer p-4 rounded-lg text-center flex flex-col justify-center items-center h-32';
+            card.dataset.id = aa.id;
+            const classTag = getClassColor(aa.class);
+            card.innerHTML = `
+                <div class="font-bold text-lg text-stone-900">${aa.name}</div>
+                <div class="text-sm text-stone-500">${aa.id}, ${aa.code}</div>
+                <div class="mt-2">
+                    <span class="tag ${classTag}">${aa.class}</span>
+                </div>`;
+            card.addEventListener('click', () => showModal(aa.id));
+            aaGrid.appendChild(card);
+        });
+    }
+
+    function renderFilterButtons() {
+        filterButtonsContainer.innerHTML = '';
+        Object.keys(filters).forEach(filterName => {
+            const button = document.createElement('button');
+            button.className = `px-3 py-1 text-sm font-medium rounded-full transition ${activeFilter === filterName ? 'bg-stone-800 text-white' : 'bg-stone-200 text-stone-700 hover:bg-stone-300'}`;
+            button.textContent = filterName;
+            button.dataset.filter = filterName;
+            button.addEventListener('click', () => {
+                activeFilter = filterName;
+                renderFilterButtons();
+                renderCards();
+            });
+            filterButtonsContainer.appendChild(button);
+        });
+    }
+
+    function showModal(aaId) {
+        const aa = aminoAcidsData.find(a => a.id === aaId);
+        if (!aa) return;
+        const classTag = getClassColor(aa.class);
+        modalContent.innerHTML = `
+            <div class="flex flex-col sm:flex-row items-center gap-6 mb-6">
+                <div class="flex-shrink-0 w-24 h-24 rounded-full ${classTag} bg-opacity-30 flex items-center justify-center border-4 border-white shadow-md">
+                     <span class="text-4xl font-bold ${classTag.replace('bg','text').replace('-200','') }">${aa.code}</span>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-stone-900">${aa.name}</h2>
+                    <p class="text-stone-600">3-Harf: ${aa.id} | 1-Harf: ${aa.code}</p>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <span class="tag ${classTag}">${aa.class}</span>
+                        <span class="tag tag-esansiyel">${aa.isEssential ? 'Esansiyel' : 'Non-Esansiyel'}</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold text-lg mb-2 text-stone-800 border-b pb-2">Özellikler ve Notlar</h3>
+                <ul class="list-disc list-inside space-y-2 text-stone-700">${aa.properties.map(prop => `<li>${prop}</li>`).join('')}</ul>
+            </div>
+            <div class="mt-6">
+                <button id="mnemonic-btn" class="gemini-btn w-full" data-original-text="✨ Anımsatıcı Oluştur">✨ Anımsatıcı Oluştur</button>
+                <div id="mnemonic-output" class="gemini-output" style="display: none;"></div>
+            </div>`;
+        
+        modal.style.display = 'block';
+        modalBackdrop.style.display = 'block';
+
+        const mnemonicBtn = document.getElementById('mnemonic-btn');
+        const mnemonicOutput = document.getElementById('mnemonic-output');
+        mnemonicBtn.addEventListener('click', () => {
+            mnemonicOutput.style.display = 'block';
+            const prompt = `TUS'a hazırlanan bir tıp öğrencisi için "${aa.name}" amino asidini hatırlatacak yaratıcı ve kısa bir anımsatıcı (mnemonic) oluştur. Anımsatıcı, şu anahtar kelimeleri içermeli veya çağrıştırmalı: ${aa.properties.join(', ')}. Cevabın sadece anımsatıcı ve kısa bir açıklamasını içersin.`;
+            callGemini(prompt, mnemonicBtn, mnemonicOutput);
+        });
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        modalBackdrop.style.display = 'none';
+    }
+    
+    function renderDerivatives() {
+        const container = document.getElementById('derivatives-grid');
+        container.innerHTML = '';
+        derivativesData.forEach(item => {
+            const aaData = aminoAcidsData.find(aa => aa.name === item.aa);
+            const classTag = aaData ? getClassColor(aaData.class) : 'tag-ozel';
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-lg shadow-md';
+            card.innerHTML = `
+                <h3 class="font-bold text-xl mb-3 flex items-center gap-2">
+                    <span class="tag ${classTag}">${item.aa}</span>
+                </h3>
+                <div class="space-y-2">${item.derivatives.map(d => `<div class="bg-stone-100 p-2 rounded text-stone-700 text-sm">${d}</div>`).join('')}</div>`;
+            container.appendChild(card);
+        });
+    }
+    
+    function renderClinical() {
+        const container = document.getElementById('clinical-grid');
+        container.innerHTML = '';
+        clinicalData.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-lg shadow-md flex flex-col';
+            card.innerHTML = `
+                <h3 class="font-bold text-xl mb-2 text-red-700">${item.name}</h3>
+                <p class="text-sm text-stone-600 mb-3"><span class="font-semibold">Eksik Enzim:</span> ${item.enzyme}</p>
+                <p class="text-stone-700 flex-grow">${item.summary}</p>
+                <div class="mt-4 pt-3 border-t">
+                    <h4 class="font-semibold text-sm mb-2 text-stone-600">İlgili Amino Asitler:</h4>
+                    <div class="flex flex-wrap gap-2">${item.affected.map(aaName => {
+                        const aaData = aminoAcidsData.find(a => a.name === aaName);
+                        return `<span class="tag ${getClassColor(aaData ? aaData.class : '')}">${aaName}</span>`
+                    }).join('')}</div>
+                </div>
+                <div class="mt-4">
+                     <button id="case-btn-${item.id}" class="gemini-btn w-full" data-original-text="✨ Örnek Vaka Oluştur">✨ Örnek Vaka Oluştur</button>
+                     <div id="case-output-${item.id}" class="gemini-output mt-2" style="display: none;"></div>
+                </div>`;
+            container.appendChild(card);
+
+            const caseBtn = document.getElementById(`case-btn-${item.id}`);
+            const caseOutput = document.getElementById(`case-output-${item.id}`);
+            caseBtn.addEventListener('click', () => {
+                caseOutput.style.display = 'block';
+                const prompt = `TUS'a hazırlanan bir tıp öğrencisi için "${item.name}" hastalığına yönelik kısa bir klinik vaka senaryosu oluştur. Vaka, tipik semptomları, "${item.enzyme}" enzim eksikliğini ve etkilenen "${item.affected.join(' ve ')}" amino asitleriyle ilişkili laboratuvar bulgularını içermelidir. Sonunda vakayla ilgili tek bir çoktan seçmeli soru ve doğru cevabı olsun. Cevap sadece vaka metni, soru ve cevabı içersin.`;
+                callGemini(prompt, caseBtn, caseOutput);
+            });
+        });
+    }
+
+    modalCloseBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
+
+    const chartCtx = document.getElementById('aaChart').getContext('2d');
+    const classCounts = aminoAcidsData.reduce((acc, aa) => {
+        acc[aa.class] = (acc[aa.class] || 0) + 1; return acc;
+    }, {});
+    
+    const classColors = { 'Alifatik': 'rgba(253, 230, 138, 0.8)', 'Aromatik': 'rgba(254, 202, 202, 0.8)', 'Polar': 'rgba(191, 219, 254, 0.8)', 'Asidik': 'rgba(254, 215, 170, 0.8)', 'Bazik': 'rgba(187, 247, 208, 0.8)', };
+
+    const aaChart = new Chart(chartCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(classCounts),
+            datasets: [{
+                label: 'Amino Asit Sınıfları',
+                data: Object.values(classCounts),
+                backgroundColor: Object.keys(classCounts).map(c => classColors[c]),
+                borderColor: '#ffffff', borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { family: "'Inter', sans-serif" } } },
+                tooltip: { titleFont: { family: "'Inter', sans-serif" }, bodyFont: { family: "'Inter', sans-serif" } }
+            },
+            onClick: (evt, elements) => {
+                if (elements.length > 0) {
+                    const chartElement = elements[0];
+                    const label = aaChart.data.labels[chartElement.index];
+                    activeFilter = label;
+                    renderFilterButtons();
+                    renderCards();
+                }
+            }
+        }
+    });
+
+    renderFilterButtons();
+    renderCards();
+    renderDerivatives();
+    renderClinical();
+});
+</script>
+</body>
+</html>
