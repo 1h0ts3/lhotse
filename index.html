@@ -10,13 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     
     <!-- Chosen Palette: Blush & Cream -->
-    <!-- Application Structure Plan: The website is designed as a single-page, narrative journey to convey a heartfelt apology and deep love. It starts with a direct apology (Hero), moves to an interactive list of "Reasons I Love You" to show appreciation, features a "Memory Gallery" to cherish shared moments, makes a clear "Promise" for the future to rebuild trust, and ends with a lighthearted, interactive "Coupon Book" to bring a smile. This non-linear, interactive structure allows her to explore the message at her own pace, making it more engaging and personal than a simple text message or letter. -->
+    <!-- Application Structure Plan: The website is designed as a single-page, narrative journey. It starts with a direct apology (Hero), moves to an interactive list of "What Your Presence Means to Me" to show deep appreciation, makes a clear "Promise" for the future to rebuild trust, and ends with a lighthearted, interactive "Coupon Book" to bring a smile. This structure is focused and flows from sincere apology to hopeful, positive action. -->
     <!-- Visualization & Content Choices:
         1.  Hero Section: Info: Apology -> Goal: Inform/Apologize -> Viz: Large, elegant typography -> Interaction: N/A -> Justification: Creates immediate emotional impact and sincerity.
-        2.  Reasons Why: Info: List of loving reasons -> Goal: Organize/Show Affection -> Viz: Animated list (HTML/JS) -> Interaction: Reasons fade in on scroll -> Justification: Turns a simple list into a dynamic and engaging reveal.
-        3.  Memory Gallery: Info: Shared moments -> Goal: Evoke Emotion -> Viz: Styled placeholder images (HTML/CSS) -> Interaction: Hover effects on images -> Justification: Visually reinforces the value of the relationship's history.
-        4.  Promise Section: Info: Commitment to change -> Goal: Rebuild Trust -> Viz: A bordered, prominent text block -> Interaction: N/A -> Justification: Makes the commitment feel formal and significant.
-        5.  Coupon Book: Info: Fun promises -> Goal: Engage/Entertain -> Viz: Interactive "coupon" cards (HTML/JS) -> Interaction: Click to "redeem" or flip the coupon -> Justification: Adds a playful, forward-looking element to end on a positive and hopeful note, encouraging interaction and a smile.
+        2.  Reasons Why (Repurposed): Info: List of meaningful impacts -> Goal: Show Deep Affection -> Viz: Animated list (HTML/JS) -> Interaction: Reasons fade in on scroll -> Justification: Replaces a generic list with a more profound and personal reflection on her value.
+        3.  Promise Section: Info: Commitment to change -> Goal: Rebuild Trust -> Viz: A bordered, prominent text block -> Interaction: N/A -> Justification: Makes the commitment feel formal and significant.
+        4.  Coupon Book: Info: Fun promises -> Goal: Engage/Entertain -> Viz: Interactive "coupon" cards (HTML/JS) -> Interaction: Click to "redeem" or flip the coupon -> Justification: Adds a playful, forward-looking element to end on a positive and hopeful note.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
@@ -50,12 +49,12 @@
             height: 3px;
             background-color: #D5A08A; /* Şeftali tonu */
         }
-        .reason-item, .gallery-item, .coupon-card, .promise-box {
+        .reason-item, .coupon-card, .promise-box {
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .reason-item.is-visible, .gallery-item.is-visible, .coupon-card.is-visible, .promise-box.is-visible {
+        .reason-item.is-visible, .coupon-card.is-visible, .promise-box.is-visible {
             opacity: 1;
             transform: translateY(0);
         }
@@ -91,42 +90,10 @@
 
         <!-- Reasons Why I Love You Section -->
         <section id="reasons" class="text-center mb-24">
-            <h2 class="section-title text-3xl md:text-4xl font-bold mb-12">Seni Neden Bu Kadar Çok Seviyorum?</h2>
-            <div id="reasons-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <h2 class="section-title text-3xl md:text-4xl font-bold mb-12">Varlığın Benim İçin Ne İfade Ediyor?</h2>
+            <div id="reasons-list" class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                 <!-- Reasons will be injected here by JS -->
             </div>
-        </section>
-
-        <!-- Memory Gallery Section -->
-        <section id="gallery" class="text-center mb-24">
-            <h2 class="section-title text-3xl md:text-4xl font-bold mb-12">Unutamadığım Anılarımız</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                <div class="gallery-item">
-                    <img src="https://placehold.co/600x400/EAD2AC/4A4A4A?text=İlk+Kahvemiz" alt="İlk kahvemiz" class="rounded-lg shadow-lg w-full h-full object-cover">
-                    <p class="text-sm mt-2 text-gray-600">O ilk kahvenin tadı hala damağımda.</p>
-                </div>
-                <div class="gallery-item">
-                    <img src="https://placehold.co/600x400/A2B5BF/FFFFFF?text=Yağmurlu+Gün" alt="Yağmurlu gün" class="rounded-lg shadow-lg w-full h-full object-cover">
-                    <p class="text-sm mt-2 text-gray-600">Sırılsıklam olmuştuk ama kimin umrundaydı?</p>
-                </div>
-                <div class="gallery-item">
-                     <img src="https://placehold.co/600x400/D5A08A/FFFFFF?text=İlk+Film+Gecemiz" alt="İlk film gecemiz" class="rounded-lg shadow-lg w-full h-full object-cover">
-                     <p class="text-sm mt-2 text-gray-600">Filmi izleyen kimdi ki?</p>
-                </div>
-                 <div class="gallery-item">
-                     <img src="https://placehold.co/600x400/8A9A5B/FFFFFF?text=Park+Yürüyüşü" alt="Park Yürüyüşü" class="rounded-lg shadow-lg w-full h-full object-cover">
-                     <p class="text-sm mt-2 text-gray-600">Sadece yürüdüğümüz o huzurlu an.</p>
-                </div>
-                <div class="gallery-item">
-                    <img src="https://placehold.co/600x400/B5838D/FFFFFF?text=Sabaha+Kadar+Sohbet" alt="Sabaha Kadar Sohbet" class="rounded-lg shadow-lg w-full h-full object-cover">
-                    <p class="text-sm mt-2 text-gray-600">Zamanın nasıl geçtiğini anlamamıştık.</p>
-                </div>
-                 <div class="gallery-item">
-                     <img src="https://placehold.co/600x400/708090/FFFFFF?text=Gelecek+Anılarımız" alt="Gelecek Anılarımız" class="rounded-lg shadow-lg w-full h-full object-cover">
-                     <p class="text-sm mt-2 text-gray-600">Ve daha nicelerine...</p>
-                </div>
-            </div>
-             <p class="mt-4 text-gray-600 italic">(Buradaki resimleri ve yazıları kendi anılarınla değiştirebilirsin.)</p>
         </section>
 
         <!-- My Promise Section -->
@@ -157,15 +124,12 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     const reasons = [
-        "Çünkü en kötü günümde bile yüzümü güldürmeyi başarıyorsun.",
-        "Çünkü senin yanındayken kendim olabiliyorum.",
-        "O bulaşıcı kahkahan için.",
-        "Bana her zaman en doğru yolu gösterdiğin için.",
-        "En basit şeyleri bile özel kılma yeteneğin için.",
-        "Bana kendimden daha çok inandığın için.",
-        "Sadece varlığınla bile dünyayı daha güzel bir yer yaptığın için.",
-        "Hayallerime saygı duyduğun ve kendi hayallerinle beni büyülediğin için.",
-        "Gözlerinin içine baktığımda hissettiğim o tarifsiz huzur için."
+        "Çünkü yanındayken zaman ve mekan anlamını yitiriyor; sadece 'biz' varız.",
+        "Bana öğrettiklerin ve sayende her gün dönüştüğüm daha iyi bir insan için.",
+        "Paylaştığımız sessizliğin bile, en gürültülü kahkahalardan daha anlamlı olduğu için.",
+        "En karmaşık düşüncelerimi bile tek bir bakışınla anlama yeteneğin için.",
+        "Birlikte kurduğumuz hayallerin güzelliği ve onlara olan sarsılmaz inancımız için.",
+        "Hayata kattığın o eşsiz renk, neşe ve macera duygusu için."
     ];
 
     const coupons = [
@@ -216,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         threshold: 0.1
     });
 
-    document.querySelectorAll('.reason-item, .gallery-item, .coupon-card, .promise-box').forEach(el => {
+    document.querySelectorAll('.reason-item, .coupon-card, .promise-box').forEach(el => {
         observer.observe(el);
     });
 });
