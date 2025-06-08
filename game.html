@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalpleri Yakala!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        /* Genel Sayfa Stilleri */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            overflow: hidden; /* Kaydırma çubuklarını gizle */
+        }
+
+        /* Başlık Stili */
+        h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        /* Oyun Alanı (Canvas) Stili */
+        #gameCanvas {
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            cursor: none; /* Oyun alanında fare imlecini gizle */
+        }
+
+        /* Skor ve Mesaj Alanı Stilleri */
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 800px;
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        /* Ana sayfaya dönüş linki */
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.2rem;
+            color: white;
+            text-decoration: none;
+            background-color: rgba(0,0,0,0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: rgba(0,0,0,0.4);
+        }
+
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">&larr; Ana Sayfaya Dön</a>
+
+    <h1>Kalpleri Yakala!</h1>
+    
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="info-panel">
+        <span id="score">Skor: 0</span>
+    </div>
+
+    <script>
+        // --- Oyun Ayarları ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        // Canvas boyutunu ayarla
+        canvas.width = window.innerWidth * 0.9;
+        canvas.height = window.innerHeight * 0.7;
+        if (canvas.width > 800) canvas.width = 800;
+
+        let score = 0;
+        let game_over = false;
+
+        // --- Oyuncu (Sepet) Ayarları ---
+        const player = {
+            width: 100,
+            height: 20,
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 30,
+            color: '#c82a54',
+            speed: 15
+        };
+        
+        // Oyuncuyu fare ile kontrol et
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            let mouseX = e.clientX - rect.left;
+            if (mouseX > player.width / 2 && mouseX < canvas.width - player.width / 2) {
+                player.x = mouseX - player.width / 2;
+            }
+        });
+
+
+        // --- Düşen Kalpler ---
+        const hearts = [];
+        const heart_size = 30;
+        const heart_speed = 2;
+
+        function addHeart() {
+            hearts.push({
+                x: Math.random() * (canvas.width - heart_size),
+                y: -heart_size, // Ekranın üstünden başla
+                size: heart_size,
+                speed: Math.random() * heart_speed + 1.5
+            });
+        }
+        
+        // --- Çizim Fonksiyonları ---
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = '#ff5c8a';
+            ctx.fillRect(player.x + 5, player.y + 5, player.width - 10, player.height - 10);
+        }
+
+        function drawHeart(heart) {
+            ctx.font = `${heart.size}px Arial`;
+            ctx.fillStyle = '#ff4d4d';
+            ctx.fillText('♥', heart.x, heart.y);
+        }
+
+        // --- Oyun Döngüsü ---
+        function update() {
+            if (game_over) return;
+
+            // Canvas'ı temizle
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Oyuncuyu çiz
+            drawPlayer();
+
+            // Kalpleri güncelle ve çiz
+            for (let i = hearts.length - 1; i >= 0; i--) {
+                const heart = hearts[i];
+                heart.y += heart.speed;
+
+                // Çarpışma kontrolü
+                if (
+                    heart.y + heart.size > player.y &&
+                    heart.x > player.x &&
+                    heart.x + heart.size < player.x + player.width
+                ) {
+                    hearts.splice(i, 1); // Kalbi sil
+                    score++;
+                    scoreElement.textContent = `Skor: ${score}`;
+                } 
+                // Ekran dışına çıkan kalbi sil
+                else if (heart.y > canvas.height) {
+                    hearts.splice(i, 1);
+                }
+
+                drawHeart(heart);
+            }
+
+            // Animasyonun devamı için tekrar çağır
+            requestAnimationFrame(update);
+        }
+
+        // --- Oyunu Başlat ---
+        // Belirli aralıklarla yeni kalp ekle
+        setInterval(addHeart, 1000); 
+
+        // Oyun döngüsünü başlat
+        update();
+
+        // Pencere yeniden boyutlandırıldığında canvas'ı ayarla
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.7;
+            if (canvas.width > 800) canvas.width = 800;
+            player.y = canvas.height - 30; // Oyuncunun pozisyonunu güncelle
+        });
+    </script>
+</body>
+</html>
