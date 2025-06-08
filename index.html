@@ -7,7 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- El yazısı fontu (Pacifico) buraya eklendi -->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
         body {
@@ -18,6 +19,14 @@
         }
         h1, h2, h3 {
             font-family: 'Playfair Display', serif;
+        }
+        /* İmza için el yazısı fontu stili */
+        .signature-font {
+            font-family: 'Pacifico', cursive;
+            /* Fontu biraz daha büyütelim ve rengini ayarlayalım */
+            font-size: 2rem; /* 1.25rem'den 2rem'e çıkarıldı */
+            color: #D5A08A; /* Şeftali tonu */
+            font-weight: 500;
         }
         .hero {
             background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('https://i.imgur.com/6Xi3a2x.jpeg');
@@ -37,7 +46,7 @@
             transform: translateX(-50%);
             width: 50px;
             height: 3px;
-            background-color: #D5A08A; /* Şeftali tonu */
+            background-color: #D5A08A;
         }
         .reason-item, .coupon-card, .promise-box {
             opacity: 0;
@@ -120,10 +129,10 @@
             </div>
         </section>
 
-        <!-- OYUN BUTONU BURADA -->
+        <!-- OYUN BUTONU -->
         <section id="game-section" class="text-center mt-24">
              <h2 class="section-title text-3xl md:text-4xl font-bold mb-6">Küçük Bir Mola?</h2>
-             <p class="max-w-2xl mx-auto mb-8 text-gray-600">Bu kadar ciddi konudan sonra belki de biraz eğlenmenin zamanı gelmiştir...</p>
+             <p class="max-w-2xl mx-auto mb-8 text-gray-600">Senin için küçük bir sürprizim daha var...</p>
             <a href="oyun.html" class="game-button-link">💖 Sana Özel Bir Oyun 💖</a>
         </section>
 
@@ -131,7 +140,8 @@
     
     <footer class="text-center py-8 bg-stone-100 mt-24">
         <p class="text-gray-700">Seni her şeyden çok seven,</p>
-        <p class="text-xl font-bold text-d5a08a mt-1">Egoşun</p>
+        <!-- İmza el yazısı fontuyla güncellendi -->
+        <p class="signature-font mt-2">Egoşun</p>
     </footer>
 
 <script>
