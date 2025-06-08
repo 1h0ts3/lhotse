@@ -9,16 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     
-    <!-- Chosen Palette: Blush & Cream -->
-    <!-- Application Structure Plan: The website is designed as a single-page, narrative journey. It starts with a direct apology (Hero), moves to an interactive list of "What Your Presence Means to Me" to show deep appreciation, makes a clear "Promise" for the future to rebuild trust, and ends with a lighthearted, interactive "Coupon Book" to bring a smile. This structure is focused and flows from sincere apology to hopeful, positive action. -->
-    <!-- Visualization & Content Choices:
-        1.  Hero Section: Info: Apology -> Goal: Inform/Apologize -> Viz: Large, elegant typography -> Interaction: N/A -> Justification: Creates immediate emotional impact and sincerity.
-        2.  Reasons Why (Repurposed): Info: List of meaningful impacts -> Goal: Show Deep Affection -> Viz: Animated list (HTML/JS) -> Interaction: Reasons fade in on scroll -> Justification: Replaces a generic list with a more profound and personal reflection on her value.
-        3.  Promise Section: Info: Commitment to change -> Goal: Rebuild Trust -> Viz: A bordered, prominent text block -> Interaction: N/A -> Justification: Makes the commitment feel formal and significant.
-        4.  Coupon Book: Info: Fun promises -> Goal: Engage/Entertain -> Viz: Interactive "coupon" cards (HTML/JS) -> Interaction: Click to "redeem" or flip the coupon -> Justification: Adds a playful, forward-looking element to end on a positive and hopeful note.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -67,27 +57,23 @@
         .coupon-card.is-flipped .back {
             transform: rotateY(0deg);
         }
-        <a href="game.html" style="
-    display: inline-block;
-    padding: 15px 30px;
-    margin-top: 20px;
-    font-size: 1.2rem;
-    color: white;
-    background-color: #ff5c8a;
-    text-decoration: none;
-    border-radius: 50px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transition: transform 0.2s;
-">
-    💖 Sana Özel Bir Oyun 💖
-</a>
-
-<style>
-    /* Butonun üzerine gelince hafifçe büyümesi için */
-    a:hover {
-        transform: scale(1.05);
-    }
-</style>
+        
+        /* OYUN BUTONU İÇİN STİLLER */
+        .game-button-link {
+            display: inline-block;
+            padding: 15px 30px;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: white;
+            background-color: #ff5c8a;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .game-button-link:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body class="leading-relaxed">
@@ -132,6 +118,13 @@
             <div id="coupons-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
                 <!-- Coupons will be injected here by JS -->
             </div>
+        </section>
+
+        <!-- OYUN BUTONU BURADA -->
+        <section id="game-section" class="text-center mt-24">
+             <h2 class="section-title text-3xl md:text-4xl font-bold mb-6">Küçük Bir Mola?</h2>
+             <p class="max-w-2xl mx-auto mb-8 text-gray-600">Bu kadar ciddi konudan sonra belki de biraz eğlenmenin zamanı gelmiştir...</p>
+            <a href="oyun.html" class="game-button-link">💖 Sana Özel Bir Oyun 💖</a>
         </section>
 
     </main>
